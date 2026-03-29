@@ -1,0 +1,238 @@
+.page-scroll {
+  min-height: 100vh;
+  padding: 28px 24px 56px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at top, rgba(59, 130, 246, 0.14), transparent 30%),
+    linear-gradient(180deg, #101114 0%, #09090b 100%);
+}
+
+.container { min-height: calc(100vh - 56px); }
+.live-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hero-card {
+  padding: 12px 4px 4px;
+}
+
+.eyebrow {
+  display: block;
+  color: #93c5fd;
+  font-size: 20px;
+  letter-spacing: 2px;
+}
+
+.topbar-code {
+  display: block;
+  color: #fff;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.room-meta-line {
+  display: block;
+  margin-top: 10px;
+  color: #b8b9c4;
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.quick-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quick-panel {
+  margin-top: 0;
+}
+
+.section-gap {
+  margin-top: 20px;
+}
+.title, .section-title { display: block; font-weight: 700; line-height: 1.15; }
+.title { font-size: 42px; }
+.section-title { font-size: 28px; }
+.subtitle, .hint, .boundary-line, .room-meta, .member-meta, .script-summary, .identity-meta, .identity-ability, .log-text, .request-meta, .summary-label {
+  display: block;
+  font-size: 22px;
+  line-height: 1.6;
+  color: #b8b9c4;
+}
+
+.panel, .mode-boundary-card, .member-card, .script-card, .room-row, .log-row, .request-card, .summary-cell {
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
+  box-shadow: 0 12px 32px rgba(0,0,0,0.22);
+}
+
+.input {
+  margin-top: 14px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.btn, .mini-btn, .chip {
+  border-radius: 18px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.btn {
+  margin-top: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 10px 24px rgba(37,99,235,0.28);
+}
+
+.btn.secondary, .mini-btn.secondary, .chip {
+  background: rgba(255,255,255,0.04);
+  box-shadow: none;
+}
+
+.btn.ghost {
+  background: rgba(255,255,255,0.02);
+}
+
+.btn.full, .mini-btn {
+  width: 100%;
+}
+
+.btn text, .mini-btn text, .chip text, .link-text, .room-title, .member-name, .script-name, .identity-title, .log-type {
+  color: #fff;
+  font-weight: 600;
+}
+
+.room-title, .member-name, .script-name, .identity-title, .request-title, .summary-value { display: block; font-size: 26px; }
+.identity-title { margin-top: 8px; }
+.link-text { font-size: 22px; }
+
+.header-row, .room-row, .member-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.live-topbar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.topbar-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.header-actions .mini-btn {
+  width: calc(50% - 5px);
+  min-width: 0;
+  padding: 14px 18px;
+}
+
+.status-badge {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(59,130,246,0.14);
+  border: 1px solid rgba(59,130,246,0.3);
+}
+
+.status-badge text { color: #dbeafe; font-size: 20px; }
+
+.chip-grid, .member-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.chip {
+  padding: 12px 16px;
+}
+
+.chip.active, .script-card.active {
+  border-color: rgba(59,130,246,0.45);
+  background: rgba(59,130,246,0.14);
+}
+
+.script-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.script-card.compact {
+  padding: 16px 18px;
+}
+
+.textarea {
+  margin-top: 14px;
+  min-height: 140px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.member-main {
+  flex: 1;
+}
+
+.member-row {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.member-row:last-child {
+  border-bottom: none;
+}
+
+.identity-ability {
+  margin-top: 10px;
+}
+
+.log-row {
+  padding: 16px 18px;
+}
+
+.log-type {
+  display: block;
+  font-size: 20px;
+  color: #93c5fd;
+}
+
+.request-card {
+  padding: 18px 20px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.summary-cell {
+  margin-top: 0;
+}
