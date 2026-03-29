@@ -16,6 +16,7 @@ import {
   assignSeat,
   createNightRequest,
   createRoom,
+  createLiveUserId,
   dispatchIdentity,
   finishDay,
   finishGame,
@@ -37,6 +38,7 @@ import {
   resolveNomination,
   resolveNightRequest,
   setCurrentRoomId,
+  setLiveUserId,
   startNight,
   submitNightRequest,
   toggleMemberReady,
@@ -54,6 +56,8 @@ interface LiveRoomStore {
   setCloudEnv: (envId: string) => void;
   createLiveRoom: (storytellerName: string, scriptId: string, playerCount: number, mode?: AppMode) => LiveRoom;
   joinLiveRoom: (inviteCode: string, playerName: string) => LiveRoom;
+  joinLiveRoomAsNewSession: (inviteCode: string, playerName: string) => LiveRoom;
+  switchCurrentIdentity: (userId: string) => void;
   selectRoom: (roomId: string | null) => void;
   assignMemberSeat: (memberId: string, seatNumber: number) => void;
   toggleReady: (memberId: string) => void;
@@ -126,6 +130,18 @@ export const useLiveRoomStore = create<LiveRoomStore>((set, get) => ({
     const result = joinRoom({ inviteCode, playerName });
     set({ rooms: listLiveRooms(), currentRoomId: result.room.roomId, currentUserId: result.currentUserId });
     return result.room;
+  },
+
+  joinLiveRoomAsNewSession: (inviteCode, playerName) => {
+    const userId = createLiveUserId();
+    const result = joinRoom({ inviteCode, playerName, userIdOverride: userId });
+    set({ rooms: listLiveRooms(), currentRoomId: result.room.roomId, currentUserId: result.currentUserId });
+    return result.room;
+  },
+
+  switchCurrentIdentity: (userId) => {
+    setLiveUserId(userId);
+    set({ currentUserId: userId, rooms: listLiveRooms(), currentRoomId: getCurrentRoomId() });
   },
 
   selectRoom: (roomId) => {

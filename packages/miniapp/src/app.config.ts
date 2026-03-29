@@ -1,7 +1,7 @@
 export default defineAppConfig({
   pages: [
-    'pages/live/index',
     'pages/game/index',
+    'pages/live/index',
     'pages/events/index',
     'pages/logic/index',
     'pages/strategy/index',

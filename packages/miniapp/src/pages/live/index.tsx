@@ -13,6 +13,14 @@ import {
 } from '@clocktower/core';
 import { useLiveRoomStore } from '@/store/live-room-store';
 import { useGameStore } from '@/store/game-store';
+import {
+  getNightConsoleSummary,
+  getNightLogs,
+  getNightTemplates,
+  getPublicDayTimeline,
+  getVisibleIdentity,
+  getVisibleNightRequests,
+} from '@/lib/live-room-service';
 import './index.scss';
 
 const liveSupportedScriptIds = ['trouble_brewing', 'sects_and_violets'];
@@ -143,6 +151,8 @@ export default function LivePage() {
   const updateCloudEnv = useLiveRoomStore((state) => state.setCloudEnv);
   const createLiveRoom = useLiveRoomStore((state) => state.createLiveRoom);
   const joinLiveRoom = useLiveRoomStore((state) => state.joinLiveRoom);
+  const joinLiveRoomAsNewSession = useLiveRoomStore((state) => state.joinLiveRoomAsNewSession);
+  const switchCurrentIdentity = useLiveRoomStore((state) => state.switchCurrentIdentity);
   const selectRoom = useLiveRoomStore((state) => state.selectRoom);
   const assignMemberSeat = useLiveRoomStore((state) => state.assignMemberSeat);
   const toggleReady = useLiveRoomStore((state) => state.toggleReady);
@@ -160,16 +170,9 @@ export default function LivePage() {
   const submitVisibleNightRequest = useLiveRoomStore((state) => state.submitVisibleNightRequest);
   const resolveNightRequestForStoryteller = useLiveRoomStore((state) => state.resolveNightRequestForStoryteller);
   const rooms = useLiveRoomStore((state) => state.rooms);
+  const currentRoomId = useLiveRoomStore((state) => state.currentRoomId);
   const currentUserId = useLiveRoomStore((state) => state.currentUserId);
   const cloudbase = useLiveRoomStore((state) => state.cloudbase);
-  const room = useLiveRoomStore((state) => state.currentRoom());
-  const myIdentity = useLiveRoomStore((state) => state.visibleIdentity());
-  const myNightRequests = useLiveRoomStore((state) => state.visibleNightRequests());
-  const consoleSummary = useLiveRoomStore((state) => state.nightConsoleSummary());
-  const templates = useLiveRoomStore((state) => state.nightTemplates());
-  const logs = useLiveRoomStore((state) => state.nightLogs());
-  const publicDayTimeline = useLiveRoomStore((state) => state.publicDayTimeline());
-  const finishedRooms = useLiveRoomStore((state) => state.finishedRooms());
   const importLiveReplay = useGameStore((state) => state.importLiveReplay);
 
   const [panel, setPanel] = useState<(typeof storytellerPanels)[number]['key']>('overview');
@@ -210,6 +213,11 @@ export default function LivePage() {
   const [victoryAlignment, setVictoryAlignment] = useState<LiveVictoryAlignment>('good');
   const [finishReason, setFinishReason] = useState('');
   const [finishNote, setFinishNote] = useState('');
+  const getMemberRoleLabel = (role?: 'storyteller' | 'player') => {
+    if (role === 'storyteller') return '说书人';
+    if (role === 'player') return '玩家';
+    return '未加入';
+  };
 
   useEffect(() => {
     loadRooms();
@@ -220,9 +228,42 @@ export default function LivePage() {
     [],
   );
 
+  const room = useMemo(
+    () => rooms.find((entry) => entry.roomId === currentRoomId),
+    [rooms, currentRoomId],
+  );
+  const myIdentity = useMemo(
+    () => getVisibleIdentity(room ?? null, currentUserId),
+    [room, currentUserId],
+  );
+  const myNightRequests = useMemo(
+    () => getVisibleNightRequests(room ?? null, currentUserId),
+    [room, currentUserId],
+  );
+  const consoleSummary = useMemo(
+    () => getNightConsoleSummary(room ?? null),
+    [room],
+  );
+  const templates = useMemo(
+    () => (room ? getNightTemplates(room.scriptId) : []),
+    [room],
+  );
+  const logs = useMemo(
+    () => getNightLogs(room ?? null),
+    [room],
+  );
+  const publicDayTimeline = useMemo(
+    () => getPublicDayTimeline(room ?? null),
+    [room],
+  );
+  const finishedRooms = useMemo(
+    () => rooms.filter((entry) => entry.status === 'finished'),
+    [rooms],
+  );
   const currentScript = room ? getScriptPack(room.scriptId) : null;
   const currentMember = room?.members.find((member) => member.userId === currentUserId) ?? null;
   const isStoryteller = currentMember?.role === 'storyteller';
+  const isMockMode = cloudbase.provider !== 'cloudbase';
   const playerMembers = room?.members.filter((member) => member.role === 'player') ?? [];
   const alivePlayers = playerMembers.filter((member) => member.liveState.isAlive);
 
@@ -239,7 +280,18 @@ export default function LivePage() {
     setResolveNominationId(room.dayState.currentNomination?.nominationId ?? '');
     setResolveNominationSummary(room.dayState.currentNomination?.outcomeSummary ?? '');
     setExecutionSummary(room.dayState.execution?.summary ?? '');
-  }, [room?.dayState]);
+  }, [
+    room?.roomId,
+    room?.dayState?.dayNumber,
+    room?.dayState?.stage,
+    room?.dayState?.summary,
+    room?.dayState?.currentNomination?.nominationId,
+    room?.dayState?.currentNomination?.nomineeMemberId,
+    room?.dayState?.currentNomination?.summary,
+    room?.dayState?.currentNomination?.outcomeSummary,
+    room?.dayState?.execution?.executedMemberId,
+    room?.dayState?.execution?.summary,
+  ]);
 
   useEffect(() => {
     if (room?.dayState?.currentNomination?.outcome === 'advanced' && !executionTargetId) {
@@ -397,6 +449,22 @@ export default function LivePage() {
             </View>
           </View>
 
+          <View className="mode-boundary-card">
+            <Text className="section-title">双入口说明</Text>
+            <Text className="hint">说书人负责建房、发身份、推进白天夜晚。玩家负责加入房间、查看自己的身份、提交夜晚操作。</Text>
+            <Text className="hint">如果你现在是在同一台设备上联调，可以直接用下面这个入口创建一个新的玩家身份加入同一房间。</Text>
+            <View
+              className="btn secondary full"
+              onClick={() => run(
+                () => joinLiveRoomAsNewSession(inviteCode.trim().toUpperCase(), joinName.trim()),
+                '已用新玩家身份加入',
+                '加入失败',
+              )}
+            >
+              <Text>本机新增一个玩家身份加入</Text>
+            </View>
+          </View>
+
           {rooms.filter((entry) => entry.status !== 'finished').length > 0 && (
             <View className="panel">
               <Text className="section-title">最近房间</Text>
@@ -452,6 +520,7 @@ export default function LivePage() {
           <View className="topbar-main">
             <Text className="eyebrow">邀请码</Text>
             <Text className="topbar-code">{room.inviteCode}</Text>
+            <Text className="room-meta-line">当前身份：{currentMember?.name ?? '未加入'} · {getMemberRoleLabel(currentMember?.role)}</Text>
             <Text className="room-meta-line">
               {room.scriptName ?? room.scriptId} · {labelStatus(room.status)} · {labelPhase(room.currentPhase)}
             </Text>
@@ -465,6 +534,23 @@ export default function LivePage() {
             </View>
           </View>
         </View>
+
+        {isMockMode && room.members.length > 1 && (
+          <View className="mode-boundary-card">
+            <Text className="section-title">本机切换视角（测试）</Text>
+            <Text className="hint">同一台设备可以在说书人和玩家视角之间切换，方便联调发身份、夜晚请求和结果回传。</Text>
+            {renderChipList(room.members.map((member) => ({
+              key: member.memberId,
+              label: `${member.name} · ${getMemberRoleLabel(member.role)}`,
+              active: member.userId === currentUserId,
+              onClick: () => run(
+                () => switchCurrentIdentity(member.userId),
+                `已切换到${member.name}`,
+                '切换身份失败',
+              ),
+            })))}
+          </View>
+        )}
 
         <View className="panel public-status-panel">
           <Text className="section-title">当前进度</Text>

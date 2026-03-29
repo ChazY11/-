@@ -227,11 +227,23 @@ export function getOrCreateLiveUserId() {
   try {
     const cached = Taro.getStorageSync(LIVE_USER_KEY);
     if (cached) return cached;
-    const generated = `wxu_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const generated = createLiveUserId();
     Taro.setStorageSync(LIVE_USER_KEY, generated);
     return generated;
   } catch {
-    return `wxu_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    return createLiveUserId();
+  }
+}
+
+export function createLiveUserId() {
+  return `wxu_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function setLiveUserId(userId: string) {
+  try {
+    Taro.setStorageSync(LIVE_USER_KEY, userId);
+  } catch {
+    // Ignore mock persistence failure.
   }
 }
 
@@ -249,6 +261,7 @@ export interface CreateRoomPayload {
 export interface JoinRoomPayload {
   inviteCode: string;
   playerName: string;
+  userIdOverride?: string;
 }
 
 export interface CreateNightRequestPayload {
@@ -365,7 +378,7 @@ export function createRoom(payload: CreateRoomPayload) {
 }
 
 export function joinRoom(payload: JoinRoomPayload) {
-  const userId = getOrCreateLiveUserId();
+  const userId = payload.userIdOverride ?? getOrCreateLiveUserId();
   const rooms = loadRooms();
   const room = rooms.find((entry) => entry.inviteCode === payload.inviteCode.trim().toUpperCase());
 
@@ -374,6 +387,7 @@ export function joinRoom(payload: JoinRoomPayload) {
 
   const existingMember = room.members.find((member) => member.userId === userId);
   if (existingMember) {
+    setLiveUserId(userId);
     saveCurrentRoomId(room.roomId);
     return { room, currentUserId: userId, member: existingMember };
   }
@@ -401,6 +415,7 @@ export function joinRoom(payload: JoinRoomPayload) {
   );
 
   upsertRoom(nextRoom);
+  setLiveUserId(userId);
   saveCurrentRoomId(nextRoom.roomId);
   return { room: nextRoom, currentUserId: userId, member };
 }
